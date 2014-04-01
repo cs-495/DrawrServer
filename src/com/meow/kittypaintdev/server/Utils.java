@@ -78,11 +78,15 @@ public class Utils {
 	public static HashMap<String, String> parse_headers(String headers_str){
 		//sexy regex thx to http://stackoverflow.com/questions/4685217/parse-raw-http-headers
 		HashMap<String, String> headers = new HashMap<String, String>();
-		String reg = "(?<name>.*?): ?(?<value>.*?)\r?\n";
+		String reg = "^(?<name>.*?): ?(?<value>.*)\\s*$";
 		Pattern pat = Pattern.compile(reg);
-		Matcher m = pat.matcher(headers_str);
-		while (m.find()){
-			headers.put(m.group("name"), m.group("value"));
+		String hs[] = headers_str.split("\n"); // \r?\n
+		System.out.println(hs.length + "LENGTH");
+		for(int i=0; i<hs.length; ++i){
+			Matcher m = pat.matcher(hs[i]);
+			if(m.matches()){
+				headers.put(m.group("name"), m.group("value"));
+			}
 		}
 		return headers;
 	}

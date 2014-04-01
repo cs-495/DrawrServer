@@ -3,6 +3,7 @@ package com.meow.kittypaintdev.server;
 import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.*;
@@ -55,15 +56,15 @@ class DrawrHandler {
 		unique_conn_id++;
 		
 		log("**CONNECT: " + client_addr);
-
-		wwriter.println("HTTP/1.1 200 OK\nContent-Type: text/html\n\nasdfasdf");
-		wstream.write("HTTP/1.1 200 OK\nContent-Type: text/html\n\nasdfasdf".getBytes());
 		
-		send_error(404, "WHAT ASDFGASD");
-		while(close_connection){}
-		
-		while(!close_connection){
-			handle_one_request();
+		try{
+			while(!close_connection){
+				handle_one_request();
+			}
+		}catch(SocketException e){
+			debug("timeout");
+		}catch(IOException e){
+			debug("ioexception - closing");
 		}
 		
 		log("**CLOSED: " + client_addr);
@@ -105,7 +106,9 @@ class DrawrHandler {
 			headers_str += line;
 		}
 		debug("headers done");
+		debug("headers_____: " + headers_str);
 		headers = Utils.parse_headers(headers_str);
+		debug("headers: " + headers.toString());
 	}
 	
 	public void route() throws IOException{
@@ -129,6 +132,12 @@ class DrawrHandler {
 		}
 	}
 	
+	public String getPathEclipseSucks(String filename) throws IOException{
+		String p = new File( "." ).getCanonicalPath();
+		p += "/assets/" + filename;
+		return p;
+	}
+	
 	public void request_chunk(String query) throws IOException{
 		// TODO: MAKE MORE EFFECIENT. THESE CHUNKS ARE ALL ALREADY LOADED IN THE MAP.
 		Pattern pat = Pattern.compile("^(?<x>[0-9]+)&(?<y>[0-9]+)");
@@ -143,6 +152,9 @@ class DrawrHandler {
 		String blank_path = "chunks/blank.png";
 		
 		try{
+			chunk_path = getPathEclipseSucks(chunk_path);
+			blank_path = getPathEclipseSucks(blank_path);
+			
 			File f = new File(chunk_path);
 			if(f.exists() && !f.isDirectory()){
 				send_binary(Files.readAllBytes(Paths.get(chunk_path)));
@@ -165,6 +177,8 @@ class DrawrHandler {
 		if(headers.containsKey("Sec-WebSocket-Key")){
 			key = Utils.hash_websocket_key(headers.get("Sec-WebSocket-Key"));
 		}
+		debug("key: " + headers.get("Sec-WebSocket-Key"));
+		debug("accept: " + key);
 		send_websocket_handshake(key);
 		
 		send_frame(">pony1");
@@ -208,10 +222,8 @@ class DrawrHandler {
 		String headers = Utils.form_header_str(Utils.form_resp_headers(body.length(), mime));
 		String full_resp = http_resp + "\r\n" + headers + "\r\n" + body;
 
-		debug("send_response() " + full_resp);
-		
 		wwriter.print(full_resp);
-		wstream.flush();
+		wwriter.flush();
 		close_connection = true;
 	}
 	
@@ -236,6 +248,7 @@ class DrawrHandler {
 		wwriter.print(full_resp);
 		wstream.write(body);
 		close_connection = true;
+		wwriter.flush();
 		wstream.flush();
 	}
 	
@@ -250,6 +263,7 @@ class DrawrHandler {
 		String full_resp = http_resp + "\r\n" + Utils.form_header_str(headers) + "\r\n";
 		
 		wwriter.print(full_resp);
+		wwriter.flush();
 		wstream.flush();
 	}
 }
@@ -264,30 +278,11 @@ public class DrawrServer extends BaseServer{
 	}
 
 	public void handle(Socket clientsock) throws IOException{
-		//PrintWriter out = new PrintWriter(clientsock.getOutputStream(), true);  
-		//out.println("HTTP/1.1 200 OK\nContent-Type: text/html\n\nasdfasdf");
 		new DrawrHandler(clientsock, verbose).handle();
 	}
 
 	public static void main(String[] args) throws IOException {
-
-		ServerSocket serversock = new ServerSocket(port);
-		while(true){
-			Socket clientsock = serversock.accept();
-			System.out.println("go");
-			OutputStream wstream = clientsock.getOutputStream();
-			System.out.println("stream");
-			wstream.write("HTTP/1.1 200 OK\nContent-Type: text/html\n\nasdfasdf".getBytes());
-			PrintWriter out = new PrintWriter(wstream, true);  
-			System.out.println("writer");
-			out.println("HTTP/1.1 200 OK\nContent-Type: text/html\n\nasdfasdf");
-			out.flush();
-			clientsock.close();
-		}
-		
-		
-	
-		//DrawrServer drawrserver = new DrawrServer(port);
-		//drawrserver.serve_forever();
+		DrawrServer drawrserver = new DrawrServer(port);
+		drawrserver.serve_forever();
 	}
 }
