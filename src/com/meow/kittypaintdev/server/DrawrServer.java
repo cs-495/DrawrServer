@@ -103,7 +103,7 @@ class DrawrHandler {
 			if(line.trim().equals("")){
 				break; // blank line, finished reading headers
 			}
-			headers_str += line;
+			headers_str += line + "\n";
 		}
 		debug("headers done");
 		debug("headers_____: " + headers_str);
