@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.*;
 
-import com.meow.kittypaintdev.server.DrawrServerMap;
+//import com.meow.kittypaintdev.server.DrawrServerMap;
 import com.meow.kittypaintdev.server.BaseServer;
 
 class DrawrHandler {
@@ -106,7 +106,6 @@ class DrawrHandler {
 			headers_str += line + "\n";
 		}
 		debug("headers done");
-		debug("headers_____: " + headers_str);
 		headers = Utils.parse_headers(headers_str);
 		debug("headers: " + headers.toString());
 	}
@@ -128,7 +127,7 @@ class DrawrHandler {
 		}else if(mpath.equals("chunk")){
 			request_chunk(mquery);
 		}else{
-			send_error(404, "Not Found");
+			send_error(404, "Not Found (route)");
 		}
 	}
 	
@@ -140,15 +139,15 @@ class DrawrHandler {
 	
 	public void request_chunk(String query) throws IOException{
 		// TODO: MAKE MORE EFFECIENT. THESE CHUNKS ARE ALL ALREADY LOADED IN THE MAP.
-		Pattern pat = Pattern.compile("^(?<x>[0-9]+)&(?<y>[0-9]+)");
+		Pattern pat = Pattern.compile("^(?<x>[\\-0-9]+)&(?<y>[\\-0-9]+).*");
 		Matcher m = pat.matcher(query);
 
 		if(!m.matches()){
-			send_error(404, "Not Found");
+			send_error(404, "Not Found (request_chunk)");
 			return;
 		}
 		
-		String chunk_path = "chunks/chunk" + m.group("x") + "x" + m.group("x") + ".png";
+		String chunk_path = "chunks/chunk" + m.group("x") + "x" + m.group("y") + ".png";
 		String blank_path = "chunks/blank.png";
 		
 		try{
@@ -163,6 +162,7 @@ class DrawrHandler {
 			}
 		}catch(FileNotFoundException e){
 			e.printStackTrace();
+			send_error(404, "Not Found (file)");
 		}
 		close_connection = true;
 	}
@@ -189,17 +189,21 @@ class DrawrHandler {
 			String m = read_frame();
 			if(m == null || m.equals("exit")) break;
 			
-			// FIBONACCI BUTTSORT
-			String o = "<b><i>";
-			String[] a = m.split("");
-			for(int i=0;i<a.length;++i){
-				if(i%2 == 0){
-					o += "<u>" + a[i] + "</u>";
-				}else{
-					o += "<span style='text-decoration: overline;'>" + a[i] + "</span>";
+			if(m.equals("PING")){
+				send_frame("PONG");
+			}else{
+				// FIBONACCI BUTTSORT
+				String o = "<b><i>";
+				String[] a = m.toUpperCase().split("");
+				for(int i=0;i<a.length;++i){
+					if(i%2 == 0){
+						o += "<u>" + a[i] + "</u>";
+					}else{
+						o += "<span style='text-decoration: overline;'>" + a[i] + "</span>";
+					}
 				}
+				send_frame(o + "</i></b>");
 			}
-			send_frame(o + "</i></b>");
 		}
 	}
 	

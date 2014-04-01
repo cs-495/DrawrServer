@@ -97,9 +97,7 @@ public class Utils {
 		HashMap<String, String> headers = new HashMap<String, String>();
 		String reg = "^(?<name>.*?): ?(?<value>.*)\\s*$";
 		Pattern pat = Pattern.compile(reg);
-		
 		String hs[] = headers_str.split("\n"); // \r?\n
-		System.out.println(hs.length + "LENGTH");
 		for(int i=0; i<hs.length; ++i){
 			Matcher m = pat.matcher(hs[i]);
 			if(m.matches()){
