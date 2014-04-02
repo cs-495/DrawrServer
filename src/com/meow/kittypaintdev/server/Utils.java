@@ -1,4 +1,7 @@
 package com.meow.kittypaintdev.server;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,6 +63,20 @@ public class Utils {
 	
 	public static long utc_now(){
 		return System.currentTimeMillis();
+	}
+	
+	public static BufferedImage deepCopy(BufferedImage bi){
+		ColorModel cm = bi.getColorModel();
+		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+		WritableRaster raster = bi.copyData(null);
+		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+	}
+	
+	public static int index_of(int[] array, int elem){
+		for (int i = 0; i < array.length; ++i){
+			if (array[i] == elem) return i;
+		}
+		return -1;
 	}
 	
 	/***************
