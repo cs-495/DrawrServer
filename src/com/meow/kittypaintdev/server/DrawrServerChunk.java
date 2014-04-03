@@ -10,14 +10,14 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class DrawrServerChunk {
-	int numx;
-	int numy;
-	BufferedImage chunk_im;
+	public int numx;
+	public int numy;
+	public BufferedImage chunk_im;
 	Graphics g;
 	byte[] chunkPngCache;
 	boolean changedSinceLastCache;
 	
-	public DrawrServerChunk(DrawrServerMap drawr_map, int numx, int numy, BufferedImage chunk_im){
+	public DrawrServerChunk(DrawrServerMap drawr_map, int numx, int numy, BufferedImage chunk_im) throws IOException{
 		//Create image not canvas
 		int size = drawr_map.chunk_block_size;
 		if (chunk_im == null){
@@ -35,6 +35,12 @@ public class DrawrServerChunk {
 		this.numy = numy;
 		this.chunkPngCache = null;
 		this.changedSinceLastCache = true;
+		updatePngCache();
+	}
+	
+	public void unload(){
+		g.dispose();
+		// etc
 	}
 	
 	public void addPoint(int local_x, int local_y, BrushObj brush, int size){
@@ -55,22 +61,19 @@ public class DrawrServerChunk {
 		}
 	}
 	
-	@SuppressWarnings("unused")
 	public boolean updateCache() throws IOException{
 		//Output to png file to be server with HTTP
 		//Every 0.1 seconds or so? <--
 		
 		updatePngCache();
 		
-		if(false){
-			try{
-				File output_file = new File("chunks/chunk" + numx + "x" + numy + ".png");
-				ImageIO.write(chunk_im, "png", output_file);
-				return true;
-			}catch(Exception ex){
-				return false;
-			}
-		}
+		/*try{
+			File output_file = new File("chunks/chunk" + numx + "x" + numy + ".png");
+			ImageIO.write(chunk_im, "png", output_file);
+			return true;
+		}catch(Exception ex){
+			return false;
+		}*/
 		return false;
 	}
 	

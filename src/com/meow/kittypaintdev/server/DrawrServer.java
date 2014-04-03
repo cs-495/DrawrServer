@@ -141,7 +141,6 @@ class DrawrHandler {
 	}
 	
 	public void request_chunk(String query) throws IOException{
-		// TODO: MAKE MORE EFFECIENT. THESE CHUNKS ARE ALL ALREADY LOADED IN THE MAP.
 		Pattern pat = Pattern.compile("^(?<x>[\\-0-9]+)&(?<y>[\\-0-9]+).*");
 		Matcher m = pat.matcher(query);
 
@@ -149,10 +148,14 @@ class DrawrHandler {
 			send_error(404, "Not Found (request_chunk)");
 			return;
 		}
+
+		int numx = Integer.parseInt(m.group("x"));
+		int numy = Integer.parseInt(m.group("y"));
+		send_binary(drawr_map.getChunkPng(numx, numy));
 		
+		/*
 		String chunk_path = "chunks/chunk" + m.group("x") + "x" + m.group("y") + ".png";
 		String blank_path = "chunks/blank.png";
-		
 		try{
 			chunk_path = Utils.getPathEclipseSucks(chunk_path);
 			blank_path = Utils.getPathEclipseSucks(blank_path);
@@ -166,7 +169,7 @@ class DrawrHandler {
 		}catch(FileNotFoundException e){
 			e.printStackTrace();
 			send_error(404, "Not Found (file)");
-		}
+		}*/
 		close_connection = true;
 	}
 	
@@ -285,7 +288,6 @@ public class DrawrServer extends BaseServer{
 	public DrawrServer(int port) throws IOException{
 		super(port);
 		drawr_map = new DrawrServerMap();
-		// TODO
 	}
 
 	public void handle(Socket clientsock) throws IOException{

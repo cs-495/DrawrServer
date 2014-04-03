@@ -1,17 +1,21 @@
 package com.meow.kittypaintdev.server;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
 public class DrawrServerMap {
 	static int max_chunks = 500;
 	static int chunks_loaded = 0;
-	
 	
 	/*ALL CHUNKS SHOULD BE LOADED AT ALL TIMES???
 	 * I DUNNO
@@ -20,8 +24,9 @@ public class DrawrServerMap {
 	 */
 	int chunk_block_size;
 	HashMap<Integer, HashMap<Integer, DrawrServerChunk>> chunks;
+	byte[] blank_chunk_png;
 	
-	public DrawrServerMap(){
+	public DrawrServerMap() throws IOException{
 		chunk_block_size = 256;
 		
 		//Hash of chunks - not array because we need negative and positive location & skippin
@@ -32,6 +37,35 @@ public class DrawrServerMap {
 				loadChunk(i, j);
 			}
 		}
+		
+		loadBlankPng();
+		
+		// create chunk cacheing thread
+		new Thread(){
+			public void run(){
+				while(true){
+					try {
+						updateChunkCache();
+						Thread.sleep(100);
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}.start();
+	}
+	
+	public void loadBlankPng() throws IOException{
+		BufferedImage im = new BufferedImage(chunk_block_size, chunk_block_size, BufferedImage.TYPE_INT_ARGB);
+		Graphics g = im.createGraphics();
+		g.setColor(Color.WHITE);
+		g.fillRect(0, 0, im.getWidth(), im.getHeight());
+		g.dispose();
+		ByteArrayOutputStream bstream = new ByteArrayOutputStream();
+		ImageIO.write(im, "png", bstream);
+		blank_chunk_png = bstream.toByteArray();
 	}
 	
 	public boolean isChunkLoaded(int numx, int numy){
@@ -43,9 +77,9 @@ public class DrawrServerMap {
 		return false;
 	}
 	
-	public void loadChunk(int numx, int numy){
+	public DrawrServerChunk loadChunk(int numx, int numy) throws IOException{
 		// this will work differently later
-		if(chunks_loaded > max_chunks) return;
+		if(chunks_loaded > max_chunks) return null;
 		chunks_loaded++;
 		
 		if (!chunks.containsKey(numx)){
@@ -60,13 +94,32 @@ public class DrawrServerMap {
 		}catch(Exception ex){
 			chunks.get(numx).put(numy, new DrawrServerChunk(this, numx, numy, null));
 		}
+		return chunks.get(numx).get(numy);
 	}
 	
-	public void updateChunkCache(){
-		// TODO:
-		// loop through chunks, do .updateCache();
-		// make a new thread and call this function every 0.1 seconds? i guess
+	public void updateChunkCache() throws IOException{
+		for(Map.Entry<Integer, HashMap<Integer, DrawrServerChunk>> entry : chunks.entrySet()){
+			//int x = entry.getKey();
+			for(Map.Entry<Integer, DrawrServerChunk> ch : entry.getValue().entrySet()){
+				//int y = ch.getKey();
+				ch.getValue().updateCache();
+			}
+		}
 	}
+	
+	public byte[] getChunkPng(int numx, int numy) throws IOException{
+		if(!isChunkLoaded(numx, numy)){
+			DrawrServerChunk c = loadChunk(numx, numy);
+			if(c != null){
+				return c.getPngImage();
+			}
+		}else{
+			return chunks.get(numx).get(numy).getPngImage();
+		}
+		return blank_chunk_png;
+	}
+	
+	// DRAWING
 	
 	public int[][] getChunksAffected(int gamex, int gamey, BrushObj brush, int size){
 		/*To find chunks affected: find 1 or more chunks for each 4 points of the square mask of the brush
@@ -118,7 +171,7 @@ public class DrawrServerMap {
 		return chunk_local_coords;
 	}
 	
-	public void addPoint(int gamex, int gamey, BrushObj brush, int size){
+	public void addPoint(int gamex, int gamey, BrushObj brush, int size) throws IOException{
 		int[][] chunks_affected = getChunksAffected(gamex, gamey, brush, size);
 		int[][] chunks_local_coords = getChunkLocalCoordinates(gamex, gamey, chunks_affected, brush);
 		
@@ -134,7 +187,7 @@ public class DrawrServerMap {
 					if (!isChunkLoaded(chunk_numx, chunk_numy))
 						loadChunk(chunk_numx, chunk_numy);
 					
-					DrawrServerChunk chunk = chunks.get(""+chunk_numx).get(""+chunk_numy);
+					DrawrServerChunk chunk = chunks.get(chunk_numx).get(chunk_numy);
 					chunk.addPoint(chunks_local_coords[i][0], chunks_local_coords[i][1], brush, size);
 					
 					chunks_written.add(chunk_written_id);
