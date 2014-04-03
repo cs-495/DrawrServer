@@ -229,8 +229,23 @@ class DrawrHandler implements DrawrEvent {
 					}
 				}
 			}else{
-				// TODO: ADDSTAMPBR, other messages
-				// // 
+				String[] parts = m.split("\\:");
+				if(parts.length == 5){
+					try{
+						int x = Integer.parseInt(parts[1]);
+						int y = Integer.parseInt(parts[2]);
+						String path = parts[3];
+						int size = Integer.parseInt(parts[4]);
+						
+						Brush br = drawr_brushes.getStamp(path, size);
+						if(br != null){
+							drawr_map.addPoint(x, y, br, size);
+						}
+						
+					}catch(Exception e){
+						debug("ERROR: parsing frame <" + m + ">");
+					}
+				}
 			}
 		}
 	}
