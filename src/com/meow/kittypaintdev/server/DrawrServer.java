@@ -193,8 +193,6 @@ class DrawrHandler implements DrawrEvent {
 			String m = read_frame();
 			if(m == null || m.equals("exit")) break;
 			
-			debug(m);
-			
 			if(m.equals("PING")){
 				send_frame("PONG");
 			}else if(m.startsWith("BUTTSORT")){
@@ -231,8 +229,8 @@ class DrawrHandler implements DrawrEvent {
 						debug("ERROR: parsing frame <" + m + ">");
 					}
 				}
-			}else{
-				/*String[] parts = m.split("\\:");
+			}else if(m.startsWith("ADDSTAMPBR")){
+				String[] parts = m.split("\\:");
 				if(parts.length == 5){
 					try{
 						int x = Integer.parseInt(parts[1]);
@@ -248,7 +246,9 @@ class DrawrHandler implements DrawrEvent {
 					}catch(Exception e){
 						debug("ERROR: parsing frame <" + m + ">");
 					}
-				}*/
+				}
+			}else{
+				send_frame("UNKNOWN:MESSAGE");
 			}
 		}
 	}

@@ -5,6 +5,8 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
@@ -21,13 +23,24 @@ public class Brush {
 		this.path = path;
 		this.r = r; this.g = g; this.b = b;
 			
-		// TODO: SANTIZE THIS GODDAMN PATH FUUUUUUUUCK
 		try{
-			String src = Utils.getPathEclipseSucks(path);
-			File img_file = new File(src);
-			img = ImageIO.read(img_file);
-			img = setImageColor(img, size, r, g, b);
+			Pattern pat = Pattern.compile("^brushes\\/[a-z]+\\/[a-z0-9A-Z]+\\.png$");
+			Matcher m = pat.matcher(path);
+
+			if(!m.matches()){
+				throw new Exception("invalid path");
+			}
+			
+			if(r >= 0 && g >= 0 && b >= 0 && r < 256  && g < 256  && b < 256 ){
+				String src = Utils.getPathEclipseSucks(path);
+				File img_file = new File(src);
+				img = ImageIO.read(img_file);
+				img = setImageColor(img, size, r, g, b);
+			}else{
+				throw new Exception("invalid arguments");
+			}
 		}catch(Exception ex){
+			System.out.println("unknown brush requested: |" + path + "|");
 			img = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR);
 			Graphics graphics = img.createGraphics();
 			graphics.setColor(Color.WHITE);
