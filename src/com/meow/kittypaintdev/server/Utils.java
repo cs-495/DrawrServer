@@ -86,6 +86,10 @@ public class Utils {
 		return -1;
 	}
 	
+	public static int mod(int m, int n){
+	    return ((m % n) + n) % n;
+	}
+	
 	/***************
 	** HTTP STUFF **
 	***************/

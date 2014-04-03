@@ -90,8 +90,6 @@ public class DrawrServerMap {
 		if(chunks_loaded > max_chunks) return null;
 		chunks_loaded++;
 		
-		//System.out.println("loadChunk("+numx+", "+numy+")");
-		
 		synchronized(chunks){
 			if (!chunks.containsKey(numx)){
 				chunks.put(numx, new HashMap<Integer, DrawrServerChunk>());
@@ -163,11 +161,9 @@ public class DrawrServerMap {
 		
 		for (int i = 0; i < 4; ++i){
 			//Calculate which chunk this pixel is in
-			int chunk_numx = brush_xs[i] / this.chunk_block_size;
-			int chunk_numy = brush_ys[i] / this.chunk_block_size;
-			if (isChunkLoaded(chunk_numx, chunk_numy)){
-				chunks_found[i] = new int[]{chunk_numx, chunk_numy};
-			}
+			int chunk_numx = (int) Math.floor(brush_xs[i] / (double)this.chunk_block_size);
+			int chunk_numy = (int) Math.floor(brush_ys[i] / (double)this.chunk_block_size);
+			chunks_found[i] = new int[]{chunk_numx, chunk_numy};
 		}
 		return chunks_found;
 	}
@@ -179,12 +175,13 @@ public class DrawrServerMap {
         * this function will probably explode if brush size > this.chunk_block_size. that should never happen.*/
 		
 		//These are correct for the chunk where the CENTER OF THE BRUSH is
-		int chunk_general_localx = gamex % this.chunk_block_size;
-		int chunk_general_localy = gamey % this.chunk_block_size;
+		if(gamex<0||gamey<0) System.out.println("getCLC("+gamex+","+gamey);
+		int chunk_general_localx = Utils.mod(gamex, this.chunk_block_size);
+		int chunk_general_localy = Utils.mod(gamey, this.chunk_block_size);
 		
 		//Calculate which chunk the CENTER OF THE BRUSH is in
-		int chunk_numx = gamex / this.chunk_block_size;
-		int chunk_numy = gamey / this.chunk_block_size;
+		int chunk_numx = (int) Math.floor(gamex / (double)this.chunk_block_size);
+		int chunk_numy = (int) Math.floor(gamey / (double)this.chunk_block_size);
 		
 		int[][] chunk_local_coords = {null, null, null, null};
 		for (int i = 0; i < 4; ++i){
