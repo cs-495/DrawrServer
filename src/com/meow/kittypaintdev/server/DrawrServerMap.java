@@ -90,6 +90,8 @@ public class DrawrServerMap {
 		if(chunks_loaded > max_chunks) return null;
 		chunks_loaded++;
 		
+		//System.out.println("loadChunk("+numx+", "+numy+")");
+		
 		synchronized(chunks){
 			if (!chunks.containsKey(numx)){
 				chunks.put(numx, new HashMap<Integer, DrawrServerChunk>());
@@ -120,6 +122,7 @@ public class DrawrServerMap {
 					int y = ch.getKey();
 					if(ch.getValue().updateCache()){ // if it was updated, update clients
 						sendUpdateClients(x, y);
+						System.out.println("update: " +x+","+y);
 					}
 				}
 			}
@@ -209,11 +212,16 @@ public class DrawrServerMap {
 				int chunk_numy = chunks_affected[i][1]; //instead of 'y'
 				String chunk_written_id = chunk_numx + ":" + chunk_numy;
 				if (!chunks_written.contains(chunk_written_id)){
-					if (!isChunkLoaded(chunk_numx, chunk_numy))
-						loadChunk(chunk_numx, chunk_numy);
+					DrawrServerChunk chunk;
+					if (!isChunkLoaded(chunk_numx, chunk_numy)){
+						chunk = loadChunk(chunk_numx, chunk_numy);
+					}else{
+						chunk = chunks.get(chunk_numx).get(chunk_numy);
+					}
 					
-					DrawrServerChunk chunk = chunks.get(chunk_numx).get(chunk_numy);
-					chunk.addPoint(chunks_local_coords[i][0], chunks_local_coords[i][1], brush, size);
+					if(chunk != null){
+						chunk.addPoint(chunks_local_coords[i][0], chunks_local_coords[i][1], brush, size);
+					}
 					
 					chunks_written.add(chunk_written_id);
 				}

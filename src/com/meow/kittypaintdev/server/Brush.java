@@ -45,6 +45,8 @@ public class Brush {
 			Graphics graphics = img.createGraphics();
 			graphics.setColor(Color.WHITE);
 			graphics.fillRect(0, 0, img.getWidth(), img.getHeight());
+			graphics.setColor(Color.RED);
+			graphics.drawString("?", 5, 5);
 			graphics.dispose();
 		}
 	}
