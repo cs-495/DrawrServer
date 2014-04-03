@@ -7,11 +7,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.*;
 import javax.imageio.ImageIO;
+
+import com.meow.kittypaintdev.server.DrawrEvent;
 
 public class DrawrServerMap {
 	static int max_chunks = 500;
@@ -25,9 +24,11 @@ public class DrawrServerMap {
 	int chunk_block_size;
 	HashMap<Integer, HashMap<Integer, DrawrServerChunk>> chunks;
 	byte[] blank_chunk_png;
+	List<DrawrEvent> clients;
 	
 	public DrawrServerMap() throws IOException{
 		chunk_block_size = 256;
+		clients = new ArrayList<DrawrEvent>();
 		
 		//Hash of chunks - not array because we need negative and positive location & skippin
 		chunks = new HashMap<Integer, HashMap<Integer, DrawrServerChunk>>();
@@ -57,6 +58,13 @@ public class DrawrServerMap {
 		}.start();
 	}
 	
+	public void addClient(DrawrEvent ev){
+		clients.add(ev);
+	}
+	public void removeClient(DrawrEvent ev){
+		clients.remove(ev);
+	}
+	
 	public void loadBlankPng() throws IOException{
 		BufferedImage im = new BufferedImage(chunk_block_size, chunk_block_size, BufferedImage.TYPE_INT_ARGB);
 		Graphics g = im.createGraphics();
@@ -82,28 +90,45 @@ public class DrawrServerMap {
 		if(chunks_loaded > max_chunks) return null;
 		chunks_loaded++;
 		
-		if (!chunks.containsKey(numx)){
-			chunks.put(numx, new HashMap<Integer, DrawrServerChunk>());
+		synchronized(chunks){
+			if (!chunks.containsKey(numx)){
+				chunks.put(numx, new HashMap<Integer, DrawrServerChunk>());
+			}
 		}
 		
 		try{
 			String src = Utils.getPathEclipseSucks("chunks/chunk" + numx + "x" + numy + ".png");
 			File img = new File(src);
 			BufferedImage chunk_im = ImageIO.read(img);
-			chunks.get(numx).put(numy, new DrawrServerChunk(this, numx, numy, chunk_im));
+			synchronized(chunks){
+				chunks.get(numx).put(numy, new DrawrServerChunk(this, numx, numy, chunk_im));
+			}
 		}catch(Exception ex){
-			chunks.get(numx).put(numy, new DrawrServerChunk(this, numx, numy, null));
+			synchronized(chunks){
+				chunks.get(numx).put(numy, new DrawrServerChunk(this, numx, numy, null));
+			}
 		}
 		return chunks.get(numx).get(numy);
 	}
 	
 	public void updateChunkCache() throws IOException{
-		for(Map.Entry<Integer, HashMap<Integer, DrawrServerChunk>> entry : chunks.entrySet()){
-			//int x = entry.getKey();
-			for(Map.Entry<Integer, DrawrServerChunk> ch : entry.getValue().entrySet()){
-				//int y = ch.getKey();
-				ch.getValue().updateCache();
+		// update chunk's cache, and send UPDATEs to clients for all changed chunks
+		synchronized(chunks){
+			for(Map.Entry<Integer, HashMap<Integer, DrawrServerChunk>> entry : chunks.entrySet()){
+				int x = entry.getKey();
+				for(Map.Entry<Integer, DrawrServerChunk> ch : entry.getValue().entrySet()){
+					int y = ch.getKey();
+					if(ch.getValue().updateCache()){ // if it was updated, update clients
+						sendUpdateClients(x, y);
+					}
+				}
 			}
+		}
+	}
+	
+	public void sendUpdateClients(int numx, int numy) throws IOException{
+		for(DrawrEvent client : clients){
+			client.update(numx, numy);
 		}
 	}
 	
@@ -121,7 +146,7 @@ public class DrawrServerMap {
 	
 	// DRAWING
 	
-	public int[][] getChunksAffected(int gamex, int gamey, BrushObj brush, int size){
+	public int[][] getChunksAffected(int gamex, int gamey, Brush brush, int size){
 		/*To find chunks affected: find 1 or more chunks for each 4 points of the square mask of the brush
         * getChunksAffected will always return in this order: topleft, bottomleft, topright, bottomright
         * if one of those 4 chunks isn't loaded, its location in the return array will be null*/
@@ -144,7 +169,7 @@ public class DrawrServerMap {
 		return chunks_found;
 	}
 	
-	public int[][] getChunkLocalCoordinates(int gamex, int gamey, int[][] chunk_nums_affected, BrushObj brush){
+	public int[][] getChunkLocalCoordinates(int gamex, int gamey, int[][] chunk_nums_affected, Brush brush){
 		/*calculate pixel location in local coordinates of each of the 4 possible chunks.
         * getChunksAffected will always return in this order: topleft, bottomleft, topright, bottomright 
         * Preserve this order in this return
@@ -171,7 +196,7 @@ public class DrawrServerMap {
 		return chunk_local_coords;
 	}
 	
-	public void addPoint(int gamex, int gamey, BrushObj brush, int size) throws IOException{
+	public void addPoint(int gamex, int gamey, Brush brush, int size) throws IOException{
 		int[][] chunks_affected = getChunksAffected(gamex, gamey, brush, size);
 		int[][] chunks_local_coords = getChunkLocalCoordinates(gamex, gamey, chunks_affected, brush);
 		

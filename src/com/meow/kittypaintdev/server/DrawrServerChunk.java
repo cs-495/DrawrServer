@@ -43,8 +43,8 @@ public class DrawrServerChunk {
 		// etc
 	}
 	
-	public void addPoint(int local_x, int local_y, BrushObj brush, int size){
-		BufferedImage brush_img = DrawrBrushes.getBrushImg(brush, size);
+	public void addPoint(int local_x, int local_y, Brush brush, int size){
+		BufferedImage brush_img = brush.getImage();
 		
 		int s = (int)Math.floor(size/2.0);
 		
@@ -53,19 +53,21 @@ public class DrawrServerChunk {
 		changedSinceLastCache = true;
 	}
 	
-	public void updatePngCache() throws IOException{
+	public boolean updatePngCache() throws IOException{
 		if(changedSinceLastCache){
 			ByteArrayOutputStream bstream = new ByteArrayOutputStream();
 			ImageIO.write(chunk_im, "png", bstream);
 			chunkPngCache = bstream.toByteArray();
+			return true;
 		}
+		return false;
 	}
 	
 	public boolean updateCache() throws IOException{
 		//Output to png file to be server with HTTP
 		//Every 0.1 seconds or so? <--
 		
-		updatePngCache();
+		return updatePngCache();
 		
 		/*try{
 			File output_file = new File("chunks/chunk" + numx + "x" + numy + ".png");
@@ -74,7 +76,6 @@ public class DrawrServerChunk {
 		}catch(Exception ex){
 			return false;
 		}*/
-		return false;
 	}
 	
 	public byte[] getPngImage(){

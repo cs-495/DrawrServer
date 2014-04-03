@@ -11,12 +11,8 @@ import java.util.regex.*;
 import com.meow.kittypaintdev.server.BaseServer;
 import com.meow.kittypaintdev.server.DrawrServerMap;
 
-/*
-benji@benji-PC /cygdrive/c/home/prog/workspace/DrawrServer
-$ java -cp bin com.meow.kittypaintdev.server.DrawrServer
-*/
 
-class DrawrHandler {
+class DrawrHandler implements DrawrEvent {
 	private static int unique_conn_id = 0;
 	public static int socket_timeout = 60000; // 60 seconds i guess
 	
@@ -34,8 +30,9 @@ class DrawrHandler {
 	private String path;
 	private HashMap<String,String> headers;
 	private DrawrServerMap drawr_map;
+	private DrawrBrushes drawr_brushes;
 	
-	public DrawrHandler(Socket cs, DrawrServerMap dm, boolean v) throws IOException{
+	public DrawrHandler(Socket cs, DrawrServerMap dm, DrawrBrushes db, boolean v) throws IOException{
 		clientsock = cs;
 		client_addr = cs.getRemoteSocketAddress().toString();
 		verbose = v;
@@ -45,8 +42,8 @@ class DrawrHandler {
 		wwriter = new PrintWriter(wstream, true);
 		cs.setSoTimeout(socket_timeout);
 		
-		// TODO
 		drawr_map = dm;
+		drawr_brushes = db;
 	}
 	
 	public void log(String msg){
@@ -77,7 +74,8 @@ class DrawrHandler {
 		}
 		
 		log("**CLOSED: " + client_addr);
-		clientsock.close(); // ?
+		drawr_map.removeClient(this);
+		clientsock.close();
 	}
 	
 	public void handle_one_request() throws IOException{
@@ -184,6 +182,7 @@ class DrawrHandler {
 		debug("key: " + headers.get("Sec-WebSocket-Key"));
 		debug("accept: " + key);
 		send_websocket_handshake(key);
+		drawr_map.addClient(this);
 		
 		send_frame(">pony1");
 		send_frame(">VIDEO2");
@@ -208,12 +207,38 @@ class DrawrHandler {
 					}
 				}
 				send_frame(o + "</i></b>");
+			}else if(m.startsWith("ADDPOINTBR")){
+				String[] parts = m.split("\\:");
+				if(parts.length == 8){
+					try{
+						int x = Integer.parseInt(parts[1]);
+						int y = Integer.parseInt(parts[2]);
+						String path = parts[3];
+						int size = Integer.parseInt(parts[4]);
+						int r = Integer.parseInt(parts[5]);
+						int g = Integer.parseInt(parts[6]);
+						int b = Integer.parseInt(parts[7]);
+						
+						Brush br = drawr_brushes.getBrush(path, size, r, g, b);
+						if(br != null){
+							drawr_map.addPoint(x, y, br, size);
+						}
+						
+					}catch(Exception e){
+						debug("ERROR: parsing frame <" + m + ">");
+					}
+				}
 			}else{
-				int x = (int)(Math.random() * 3);
-				int y = (int)(Math.random() * 2);
-				send_frame("UPDATE:" + x + ":" + y);
+				// TODO: ADDSTAMPBR, other messages
+				// // 
 			}
 		}
+	}
+
+	@Override
+	public void update(int x, int y) throws IOException {
+		// TODO: client keeps track of its viewport with "UPDATESFOR:x1:y1:x2:y2", and only takes updates in that range
+		send_frame("UPDATE:" + x + ":" + y);
 	}
 	
 	
@@ -285,16 +310,18 @@ public class DrawrServer extends BaseServer{
 	private static String host = ""; //"127.0.0.1"
 	private static int port = 27182; //80
 	private static boolean verbose = true;
-	
+
 	private DrawrServerMap drawr_map;
+	private DrawrBrushes drawr_brushes;
 	
 	public DrawrServer(int port) throws IOException{
 		super(port);
+		drawr_brushes = new DrawrBrushes();
 		drawr_map = new DrawrServerMap();
 	}
 
 	public void handle(Socket clientsock) throws IOException{
-		new DrawrHandler(clientsock, drawr_map, verbose).handle();
+		new DrawrHandler(clientsock, drawr_map, drawr_brushes, verbose).handle();
 	}
 
 	public static void main(String[] args) throws IOException {

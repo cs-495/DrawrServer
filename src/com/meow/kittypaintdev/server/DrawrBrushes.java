@@ -3,9 +3,28 @@ package com.meow.kittypaintdev.server;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DrawrBrushes {
 	
+	List<Brush> brush_cache;
+	
+	public DrawrBrushes(){
+		brush_cache = new ArrayList<Brush>();
+		// TODO: make it so brushes timeout of the cache, so we don't have like millions of them in random colors
+	}
+	
+	public Brush getBrush(String path, int size, int r, int g, int b){
+		for(Brush br : brush_cache){
+			if(br.matches(path, size, r, g, b)) return br;
+		}
+		Brush newbr = new Brush(path, size, r, g, b);
+		brush_cache.add(newbr);
+		return newbr;
+	}
+	
+	////////////////////////////////////////////////////// here be dragons
 	
 	//Hope this actually works by reference benji says yes
 	//THIS METHOD ASSUMES BUFFEREDIMG TYPE ARGB
@@ -23,7 +42,7 @@ public class DrawrBrushes {
 		return imgnew;
 	}
 	
-	public static void setBrushColor(BrushObj brush, int r, int g, int b){
+	/*public static void setBrushColor(Brush brush, int r, int g, int b){
 		if (r < 0 || g < 0 || b < 0 || r > 255 || g > 255 || b > 255) return;
 		brush.color.r = r;
 		brush.color.g = g;
@@ -36,7 +55,7 @@ public class DrawrBrushes {
 		}
 	}
 	
-	public static BufferedImage getBrushImg(BrushObj brush, int size){
+	public static BufferedImage getBrushImg(Brush brush, int size){
 		if (brush.type == "brush"){
 			int index = Utils.index_of(brush.sizes, size);
 			if (index >= 0){
@@ -44,5 +63,5 @@ public class DrawrBrushes {
 			}
 		}
 		return brush.img;
-	}
+	}*/
 }
