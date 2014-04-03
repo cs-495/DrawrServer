@@ -3,6 +3,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -63,6 +64,12 @@ public class Utils {
 	
 	public static long utc_now(){
 		return System.currentTimeMillis();
+	}
+	
+	public static String getPathEclipseSucks(String filename) throws IOException{
+		String p = new File( "." ).getCanonicalPath();
+		p += "/assets/" + filename;
+		return p;
 	}
 	
 	public static BufferedImage deepCopy(BufferedImage bi){

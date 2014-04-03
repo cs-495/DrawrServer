@@ -9,19 +9,23 @@ import java.util.HashMap;
 import javax.imageio.ImageIO;
 
 public class DrawrServerMap {
+	static int max_chunks = 500;
+	static int chunks_loaded = 0;
+	
+	
 	/*ALL CHUNKS SHOULD BE LOADED AT ALL TIMES???
 	 * I DUNNO
 	 * CAN EASILY UNLOAD AND RELOAD FROM THE CHUNK PNGS
 	 * BUT HOW DO WE DECIDE WHEN WE CAN UNLOAD THEM???
 	 */
 	int chunk_block_size;
-	HashMap<String, HashMap<String, DrawrServerChunk>> chunks;
+	HashMap<Integer, HashMap<Integer, DrawrServerChunk>> chunks;
 	
 	public DrawrServerMap(){
 		chunk_block_size = 256;
 		
 		//Hash of chunks - not array because we need negative and positive location & skippin
-		chunks = new HashMap<String, HashMap<String, DrawrServerChunk>>();
+		chunks = new HashMap<Integer, HashMap<Integer, DrawrServerChunk>>();
 		
 		for (int i = -1; i < 2; ++i){
 			for (int j = -1; j < 2; ++j){
@@ -31,29 +35,37 @@ public class DrawrServerMap {
 	}
 	
 	public boolean isChunkLoaded(int numx, int numy){
-		String s_numx = "" + numx;
-		String s_numy = "" + numy;
-		if (chunks.containsKey(s_numx) && chunks.containsKey(s_numy)){
+		if (chunks.containsKey(numx) &&
+				chunks.get(numx).containsKey(numy) &&
+				chunks.get(numx).get(numy) != null){
 			return true;
 		}
 		return false;
 	}
 	
 	public void loadChunk(int numx, int numy){
-		String s_numx = "" + numx;
-		String s_numy = "" + numy;
-		if (!chunks.containsKey(s_numx)){
-			chunks.put(s_numx, new HashMap<String, DrawrServerChunk>());
+		// this will work differently later
+		if(chunks_loaded > max_chunks) return;
+		chunks_loaded++;
+		
+		if (!chunks.containsKey(numx)){
+			chunks.put(numx, new HashMap<Integer, DrawrServerChunk>());
 		}
 		
 		try{
-			String src = "./chunks/chunk" + numx + "x" + numy + ".png";
+			String src = Utils.getPathEclipseSucks("chunks/chunk" + numx + "x" + numy + ".png");
 			File img = new File(src);
 			BufferedImage chunk_im = ImageIO.read(img);
-			chunks.get(s_numx).put(s_numy, new DrawrServerChunk(this, numx, numy, chunk_im));
+			chunks.get(numx).put(numy, new DrawrServerChunk(this, numx, numy, chunk_im));
 		}catch(Exception ex){
-			chunks.get(s_numx).put(s_numy, new DrawrServerChunk(this, numx, numy, null));
+			chunks.get(numx).put(numy, new DrawrServerChunk(this, numx, numy, null));
 		}
+	}
+	
+	public void updateChunkCache(){
+		// TODO:
+		// loop through chunks, do .updateCache();
+		// make a new thread and call this function every 0.1 seconds? i guess
 	}
 	
 	public int[][] getChunksAffected(int gamex, int gamey, BrushObj brush, int size){
@@ -101,7 +113,6 @@ public class DrawrServerMap {
 				chunk_local_coords[i] = new int[]{
 						chunk_general_localx + dx * this.chunk_block_size,
 						chunk_general_localy + dy * this.chunk_block_size};
-				//Is this still beautiful?
 			}
 		}
 		return chunk_local_coords;
@@ -130,6 +141,5 @@ public class DrawrServerMap {
 				}
 			}
 		}
-		//pass
 	}
 }

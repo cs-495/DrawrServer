@@ -8,8 +8,13 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.*;
 
-//import com.meow.kittypaintdev.server.DrawrServerMap;
 import com.meow.kittypaintdev.server.BaseServer;
+import com.meow.kittypaintdev.server.DrawrServerMap;
+
+/*
+benji@benji-PC /cygdrive/c/home/prog/workspace/DrawrServer
+$ java -cp bin com.meow.kittypaintdev.server.DrawrServer
+*/
 
 class DrawrHandler {
 	private static int unique_conn_id = 0;
@@ -28,8 +33,9 @@ class DrawrHandler {
 	
 	private String path;
 	private HashMap<String,String> headers;
+	private DrawrServerMap drawr_map;
 	
-	public DrawrHandler(Socket cs, boolean v) throws IOException{
+	public DrawrHandler(Socket cs, DrawrServerMap dm, boolean v) throws IOException{
 		clientsock = cs;
 		client_addr = cs.getRemoteSocketAddress().toString();
 		verbose = v;
@@ -38,6 +44,9 @@ class DrawrHandler {
 		rreader = new BufferedReader(new InputStreamReader(rstream));
 		wwriter = new PrintWriter(wstream, true);
 		cs.setSoTimeout(socket_timeout);
+		
+		// TODO
+		drawr_map = dm;
 	}
 	
 	public void log(String msg){
@@ -131,12 +140,6 @@ class DrawrHandler {
 		}
 	}
 	
-	public String getPathEclipseSucks(String filename) throws IOException{
-		String p = new File( "." ).getCanonicalPath();
-		p += "/assets/" + filename;
-		return p;
-	}
-	
 	public void request_chunk(String query) throws IOException{
 		// TODO: MAKE MORE EFFECIENT. THESE CHUNKS ARE ALL ALREADY LOADED IN THE MAP.
 		Pattern pat = Pattern.compile("^(?<x>[\\-0-9]+)&(?<y>[\\-0-9]+).*");
@@ -151,8 +154,8 @@ class DrawrHandler {
 		String blank_path = "chunks/blank.png";
 		
 		try{
-			chunk_path = getPathEclipseSucks(chunk_path);
-			blank_path = getPathEclipseSucks(blank_path);
+			chunk_path = Utils.getPathEclipseSucks(chunk_path);
+			blank_path = Utils.getPathEclipseSucks(blank_path);
 			
 			File f = new File(chunk_path);
 			if(f.exists() && !f.isDirectory()){
@@ -277,12 +280,16 @@ public class DrawrServer extends BaseServer{
 	private static int port = 27182; //80
 	private static boolean verbose = true;
 	
+	private DrawrServerMap drawr_map;
+	
 	public DrawrServer(int port) throws IOException{
 		super(port);
+		drawr_map = new DrawrServerMap();
+		// TODO
 	}
 
 	public void handle(Socket clientsock) throws IOException{
-		new DrawrHandler(clientsock, verbose).handle();
+		new DrawrHandler(clientsock, drawr_map, verbose).handle();
 	}
 
 	public static void main(String[] args) throws IOException {
