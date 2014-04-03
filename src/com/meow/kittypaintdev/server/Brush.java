@@ -12,7 +12,6 @@ import javax.imageio.ImageIO;
 public class Brush {
 	BufferedImage img;
 	String path;
-	int size;
 	int r;
 	int g;
 	int b;
@@ -21,7 +20,6 @@ public class Brush {
 		// TODO: stamp
 		this.img = null;
 		this.path = path;
-		this.size = size;
 		this.r = r;
 		this.g = g;
 		this.b = b;
@@ -59,6 +57,6 @@ public class Brush {
 	}
 	
 	public boolean matches(String path, int size, int r, int g, int b){
-		return this.path.equals(path) && this.size == size && this.r == r && this.g == g && this.b == b;
+		return this.path.equals(path) && this.img.getWidth() == size && this.r == r && this.g == g && this.b == b;
 	}
 }

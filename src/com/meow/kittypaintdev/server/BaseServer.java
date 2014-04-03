@@ -41,5 +41,4 @@ public abstract class BaseServer {
 	
 	abstract public void handle(Socket clientSocket) throws IOException;
 	
-
 }
