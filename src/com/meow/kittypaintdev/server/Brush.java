@@ -51,6 +51,7 @@ public class Brush {
 			Graphics graphics = img.createGraphics();
 			graphics.setColor(Color.CYAN);
 			graphics.fillRect(0, 0, img.getWidth(), img.getHeight());
+			graphics.drawString("?", 5, 5);
 			graphics.dispose();
 		}
 	}
@@ -61,7 +62,7 @@ public class Brush {
 	
 	//THIS METHOD ASSUMES BUFFEREDIMG TYPE ABGR
 	public static BufferedImage setImageColor(BufferedImage img, int size, int r, int g, int b){
-		BufferedImage imgnew = Utils.deepCopy(img);
+		BufferedImage imgnew = img; //edit the old image/pass by reference //Utils.deepCopy(img);
 		
 		byte[] pixels = ((DataBufferByte) imgnew.getRaster().getDataBuffer()).getData();
 		for (int i = 0; i < pixels.length; i+=4){

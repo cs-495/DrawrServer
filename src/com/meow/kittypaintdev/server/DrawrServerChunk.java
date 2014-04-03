@@ -58,6 +58,7 @@ public class DrawrServerChunk {
 			ByteArrayOutputStream bstream = new ByteArrayOutputStream();
 			ImageIO.write(chunk_im, "png", bstream);
 			chunkPngCache = bstream.toByteArray();
+			changedSinceLastCache = false;
 			return true;
 		}
 		return false;
@@ -65,7 +66,6 @@ public class DrawrServerChunk {
 	
 	public boolean updateCache() throws IOException{
 		//Output to png file to be server with HTTP
-		//Every 0.1 seconds or so? <--
 		
 		return updatePngCache();
 		

@@ -71,6 +71,7 @@ class DrawrHandler implements DrawrEvent {
 			debug("timeout");
 		}catch(IOException e){
 			debug("ioexception - closing");
+			e.printStackTrace();
 		}
 		
 		log("**CLOSED: " + client_addr);
@@ -192,6 +193,8 @@ class DrawrHandler implements DrawrEvent {
 			String m = read_frame();
 			if(m == null || m.equals("exit")) break;
 			
+			debug(m);
+			
 			if(m.equals("PING")){
 				send_frame("PONG");
 			}else if(m.startsWith("BUTTSORT")){
@@ -229,7 +232,7 @@ class DrawrHandler implements DrawrEvent {
 					}
 				}
 			}else{
-				String[] parts = m.split("\\:");
+				/*String[] parts = m.split("\\:");
 				if(parts.length == 5){
 					try{
 						int x = Integer.parseInt(parts[1]);
@@ -245,7 +248,7 @@ class DrawrHandler implements DrawrEvent {
 					}catch(Exception e){
 						debug("ERROR: parsing frame <" + m + ">");
 					}
-				}
+				}*/
 			}
 		}
 	}
@@ -258,7 +261,12 @@ class DrawrHandler implements DrawrEvent {
 	
 	
 	public void send_frame(String msg) throws IOException{
-		wstream.write(Utils.make_websocket_frame(msg));
+		try{
+			wstream.write(Utils.make_websocket_frame(msg));
+		}catch(IOException e){
+			System.out.println("ERROR: " + msg);
+			throw e;
+		}
 	}
 	
 	public String read_frame() throws IOException{
@@ -282,7 +290,7 @@ class DrawrHandler implements DrawrEvent {
 	
 	public void send_error(int code, String message) throws IOException{
 		String body = "error. " + code + " " + message + "\n";
-		debug("send_error() " + "HTTP/1.1 " + code + " " + message);
+		//debug("send_error() " + "HTTP/1.1 " + code + " " + message);
 		send_response(code, message, body, "text/html; charset=utf-8");
 	}
 	
@@ -296,7 +304,7 @@ class DrawrHandler implements DrawrEvent {
 		String headers = Utils.form_header_str(Utils.form_resp_headers(body.length, mime));
 		String full_resp = http_resp + "\r\n" + headers + "\r\n";
 		
-		debug("send_binary() " + http_resp);
+		//debug("send_binary() " + http_resp);
 		
 		wwriter.print(full_resp);
 		wstream.write(body);

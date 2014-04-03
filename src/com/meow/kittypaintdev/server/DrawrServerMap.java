@@ -47,7 +47,7 @@ public class DrawrServerMap {
 				while(true){
 					try {
 						updateChunkCache();
-						Thread.sleep(100);
+						Thread.sleep(2000);
 					} catch (IOException e) {
 						e.printStackTrace();
 					} catch (InterruptedException e) {
