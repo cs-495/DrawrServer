@@ -114,9 +114,7 @@ class DrawrHandler {
 			}
 			headers_str += line + "\n";
 		}
-		debug("headers done");
 		headers = Utils.parse_headers(headers_str);
-		debug("headers: " + headers.toString());
 	}
 	
 	public void route() throws IOException{
@@ -197,10 +195,11 @@ class DrawrHandler {
 			
 			if(m.equals("PING")){
 				send_frame("PONG");
-			}else{
+			}else if(m.startsWith("BUTTSORT")){
 				// FIBONACCI BUTTSORT
+				String x = m.substring(m.indexOf(":") + 1);
 				String o = "<b><i>";
-				String[] a = m.toUpperCase().split("");
+				String[] a = x.toUpperCase().split("");
 				for(int i=0;i<a.length;++i){
 					if(i%2 == 0){
 						o += "<u>" + a[i] + "</u>";
@@ -209,6 +208,10 @@ class DrawrHandler {
 					}
 				}
 				send_frame(o + "</i></b>");
+			}else{
+				int x = (int)(Math.random() * 3);
+				int y = (int)(Math.random() * 2);
+				send_frame("UPDATE:" + x + ":" + y);
 			}
 		}
 	}
