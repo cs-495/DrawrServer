@@ -348,6 +348,7 @@ public class DrawrServer extends BaseServer{
 	}
 
 	public static void main(String[] args) throws IOException {
+		// getPidFile().deleteOnExit(); //? http://barelyenough.org/blog/2005/03/java-daemon/
 		DrawrServer drawrserver = new DrawrServer(port);
 		drawrserver.serve_forever();
 	}
