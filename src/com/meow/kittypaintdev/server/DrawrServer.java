@@ -61,7 +61,7 @@ class DrawrHandler implements DrawrEvent {
 		conn_id = unique_conn_id;
 		unique_conn_id++;
 		
-		log("**CONNECT: " + client_addr);
+		//log("**CONNECT: " + client_addr);
 		
 		try{
 			while(!close_connection){
@@ -74,7 +74,7 @@ class DrawrHandler implements DrawrEvent {
 			e.printStackTrace();
 		}
 		
-		log("**CLOSED: " + client_addr);
+		//log("**CLOSED: " + client_addr);
 		drawr_map.removeClient(this);
 		clientsock.close();
 	}
@@ -94,8 +94,8 @@ class DrawrHandler implements DrawrEvent {
 		String command = words[0];
 		path = words[1];
 		
-		log("DEBUG path<" + path + ">");
 		if(command.equals("GET")){
+			log("connect: "+client_addr+"; GET " + path + "");
 			read_request_handlers();
 			route();
 		}else{

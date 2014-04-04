@@ -175,7 +175,6 @@ public class DrawrServerMap {
         * this function will probably explode if brush size > this.chunk_block_size. that should never happen.*/
 		
 		//These are correct for the chunk where the CENTER OF THE BRUSH is
-		if(gamex<0||gamey<0) System.out.println("getCLC("+gamex+","+gamey);
 		int chunk_general_localx = Utils.mod(gamex, this.chunk_block_size);
 		int chunk_general_localy = Utils.mod(gamey, this.chunk_block_size);
 		
