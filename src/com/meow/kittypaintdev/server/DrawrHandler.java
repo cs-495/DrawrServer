@@ -228,15 +228,14 @@ class DrawrHandler implements DrawrEvent {
 				}
 			}else if(m.startsWith("ADDSTAMPBR")){
 				String[] parts = m.split("\\:");
-				if(parts.length == 6){
+				if(parts.length == 5){
 					try{
 						int x = Integer.parseInt(parts[1]);
 						int y = Integer.parseInt(parts[2]);
 						String path = parts[3];
 						int size = Integer.parseInt(parts[4]);
-						int orig_size = Integer.parseInt(parts[5]);
 						
-						Brush br = drawr_brushes.getStamp(path, size, orig_size);
+						Brush br = drawr_brushes.getStamp(path, size);
 						if(br != null){
 							drawr_map.addPoint(x, y, br, size);
 						}

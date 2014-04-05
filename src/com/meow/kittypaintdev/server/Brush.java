@@ -53,7 +53,7 @@ public class Brush {
 		}
 	}
 	
-	public Brush(String path, int size, int orig_size){
+	public Brush(String path, int size){
 		img = null;
 		this.path = path;
 		r = -1; g = -1; b = -1;
@@ -65,6 +65,7 @@ public class Brush {
 			img = ImageIO.read(img_file);
 			
 			//Scale the stamp upward!!
+			int orig_size = img.getWidth();
 			if (orig_size < size){
 				double scale = (double)size/(double)orig_size;
 				BufferedImage scaled = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR);

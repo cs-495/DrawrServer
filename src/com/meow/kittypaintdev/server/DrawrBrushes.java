@@ -21,11 +21,11 @@ public class DrawrBrushes {
 		return newbr;
 	}
 	
-	public Brush getStamp(String path, int size, int orig_size){
+	public Brush getStamp(String path, int size){
 		for (Brush br : brush_cache){
 			if(br.matches(path, size)) return br;
 		}
-		Brush newbr = new Brush(path, size, orig_size);
+		Brush newbr = new Brush(path, size);
 		brush_cache.add(newbr);
 		return newbr;
 	}
