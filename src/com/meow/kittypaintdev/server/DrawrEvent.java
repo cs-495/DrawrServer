@@ -7,4 +7,5 @@ public interface DrawrEvent {
 	void update(int x, int y, byte[] bin_img) throws IOException;
 	void update(int x, int y) throws IOException;
 	
+	int getId();
 }

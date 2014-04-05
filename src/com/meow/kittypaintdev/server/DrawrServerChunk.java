@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -18,7 +17,7 @@ public class DrawrServerChunk {
 	boolean changedSinceLastCache;
 	
 	public DrawrServerChunk(DrawrServerMap drawr_map, int numx, int numy, BufferedImage chunk_im) throws IOException{
-		//Create image not canvas
+		
 		int size = drawr_map.chunk_block_size;
 		if (chunk_im == null){
 			this.chunk_im = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);

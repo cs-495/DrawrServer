@@ -6,7 +6,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 import javax.imageio.ImageIO;
 
@@ -23,15 +22,8 @@ public class DrawrServerMap {
 	 */
 	int chunk_block_size;
 	HashMap<Integer, HashMap<Integer, DrawrServerChunk>> chunks;
-	byte[] blank_chunk_png;
+	private static byte[] blank_chunk_png;
 	List<DrawrEvent> clients;
-	
-	public int n(){int n=0; //////********
-		for(Map.Entry<Integer, HashMap<Integer, DrawrServerChunk>> entry : chunks.entrySet()){
-			n += entry.getValue().size();
-		}
-		return n;
-	}
 	
 	public DrawrServerMap() throws IOException{
 		chunk_block_size = 256;
@@ -53,7 +45,7 @@ public class DrawrServerMap {
 			public void run(){
 				while(true){
 					try {
-						System.out.println("clients: " + clients.size() + ", chunks: " + n());
+						//System.out.println("n=" + clients.size());
 						updateChunkCache();
 						Thread.sleep(250);
 					} catch (IOException e) {
@@ -69,8 +61,23 @@ public class DrawrServerMap {
 	public void addClient(DrawrEvent ev){
 		clients.add(ev);
 	}
-	public void removeClient(DrawrEvent ev){
+	public void removeClient(Integer eventid){
+		Iterator<DrawrEvent> it = clients.iterator();
+		while(it.hasNext()){
+			DrawrEvent ev = it.next();
+			//System.out.println("{"+eventid+" =!!! "+ev.getId()+"}");
+			if(ev.getId() == eventid){
+				it.remove();
+			}
+		}
+		/*for(DrawrEvent e : clients){
+			if(e==ev){
+				System.out.println("{"+e+" =!!! "+ev+"}");
+			}
+		}
+		System.out.print("("+clients.size()+"->");
 		clients.remove(ev);
+		System.out.println(clients.size()+")");*/
 	}
 	
 	public void loadBlankPng() throws IOException{

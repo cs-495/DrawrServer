@@ -58,7 +58,6 @@ public class Brush {
 		this.path = path;
 		r = -1; g = -1; b = -1;
 		
-		// TODO: SANTIZE THIS GODDAMN PATH FUUUUUUUUCK
 		try{
 			String src = Utils.getPathInAssets(path);
 			File img_file = new File(src);
