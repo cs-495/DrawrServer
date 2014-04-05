@@ -20,6 +20,10 @@ kill_daemon(){
     fi
 }
 
+kill_daemon_actual(){
+    kill `cat $DRAWRPIDFILE`
+}
+
 start_daemon(){
     #java -Ddaemon.pidfile=$DRAWRPIDFILE -cp bin com.meow.kittypaintdev.server.DrawrServer <&- 1>/dev/null 2>&1 &
     java -Ddaemon.pidfile=$DRAWRPIDFILE -cp bin com.meow.kittypaintdev.server.DrawrServer <&- 1>test.log 2>&1 &
@@ -35,11 +39,11 @@ fi
 
 if [ "$1" == "stop" ]
   then
-    kill_daemon
+    kill_daemon_actual
 fi
 
 if [ "$1" == "restart" ]
   then
-    kill_daemon
+    kill_daemon_actual
     start_daemon
 fi

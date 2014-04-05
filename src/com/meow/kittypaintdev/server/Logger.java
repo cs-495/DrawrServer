@@ -35,7 +35,8 @@ public class Logger {
 	}
 	
 	public void log(String msg){
-		write_logfile(log, msg);
+		// disabled for now - log file gets really big really fast
+		//write_logfile(log, msg);
 	}
 	
 	public void debug(String msg){
