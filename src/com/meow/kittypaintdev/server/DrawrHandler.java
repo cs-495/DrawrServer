@@ -16,14 +16,17 @@ class DrawrHandler implements DrawrEvent {
 	private static int unique_conn_id = 0;
 	public static int socket_timeout = 60000; // 60 seconds i guess
 	
+	private static int depth = 0;
+	private int thisdepth;
+	
 	private Socket clientsock;
 	private InputStream rstream;
 	private BufferedReader rreader;
 	private OutputStream wstream;
 	private PrintWriter wwriter;
+	private String client_addr;
 	private boolean close_connection;
 	private int conn_id;
-	private String client_addr;
 	
 	private String path;
 	private HashMap<String,String> headers;
@@ -45,6 +48,12 @@ class DrawrHandler implements DrawrEvent {
 		drawr_brushes = db;
 	}
 	
+	public void depthlog(String msg){
+		for(int i=0;i<thisdepth;++i){
+			System.out.print("  ");
+		}
+		System.out.println(msg);
+	}
 	public void log(String msg){
 		logger.log(conn_id + "|" + msg);
 	}
@@ -60,7 +69,11 @@ class DrawrHandler implements DrawrEvent {
 		conn_id = unique_conn_id;
 		unique_conn_id++;
 		
-		//log("**CONNECT: " + client_addr);
+		//**
+		thisdepth = depth;
+		depth++;
+		
+		depthlog("**CONN>: [" + conn_id + ", " + thisdepth + "] " + client_addr);
 		
 		try{
 			while(!close_connection){
@@ -73,7 +86,8 @@ class DrawrHandler implements DrawrEvent {
 			e.printStackTrace();
 		}
 		
-		//log("**CLOSED: " + client_addr);
+		depthlog("**xxxx<: [" + conn_id + ", " + thisdepth + "] " + client_addr);
+		depth--;
 		drawr_map.removeClient(this);
 		clientsock.close();
 	}

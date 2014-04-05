@@ -15,7 +15,6 @@ import com.meow.kittypaintdev.server.DrawrServerMap;
 public class DrawrServer extends BaseServer{ 
 	private static String host = ""; //"127.0.0.1"
 	private static int port = 27182; //80
-	private static boolean verbose = true;
 
 	private DrawrServerMap drawr_map;
 	private DrawrBrushes drawr_brushes;

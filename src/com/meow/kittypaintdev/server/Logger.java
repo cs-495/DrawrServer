@@ -5,6 +5,8 @@ import java.util.Date;
 
 public class Logger {
 	
+	private static boolean to_stdout = true;
+	
 	File log_file;
 	PrintWriter log;
 	File debug_file;
@@ -19,8 +21,7 @@ public class Logger {
 		log = new PrintWriter(log_file);
 		debug = new PrintWriter(debug_file);
 		error = new PrintWriter(error_file);
-		log.println("***starting...");
-		log.flush();
+		log("***starting...");
 	}
 	
 	public void close() throws IOException{
@@ -30,13 +31,17 @@ public class Logger {
 	}
 	
 	public void write_logfile(PrintWriter bw, String msg){
-		bw.println("[" + new Date().toString() + "] " + msg);
-		bw.flush();
+		if(to_stdout){
+			System.out.println("[" + new Date().toString() + "] " + msg);
+		}else{
+			bw.println("[" + new Date().toString() + "] " + msg);
+			bw.flush();
+		}
 	}
 	
 	public void log(String msg){
 		// disabled for now - log file gets really big really fast
-		//write_logfile(log, msg);
+		// write_logfile(log, msg);
 	}
 	
 	public void debug(String msg){

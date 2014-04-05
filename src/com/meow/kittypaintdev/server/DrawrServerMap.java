@@ -26,6 +26,13 @@ public class DrawrServerMap {
 	byte[] blank_chunk_png;
 	List<DrawrEvent> clients;
 	
+	public int n(){int n=0; //////********
+		for(Map.Entry<Integer, HashMap<Integer, DrawrServerChunk>> entry : chunks.entrySet()){
+			n += entry.getValue().size();
+		}
+		return n;
+	}
+	
 	public DrawrServerMap() throws IOException{
 		chunk_block_size = 256;
 		clients = new ArrayList<DrawrEvent>();
@@ -35,7 +42,7 @@ public class DrawrServerMap {
 		
 		for (int i = -1; i < 2; ++i){
 			for (int j = -1; j < 2; ++j){
-				loadChunk(i, j);
+				loadChunkForce(i, j);
 			}
 		}
 		
@@ -46,6 +53,7 @@ public class DrawrServerMap {
 			public void run(){
 				while(true){
 					try {
+						System.out.println("clients: " + clients.size() + ", chunks: " + n());
 						updateChunkCache();
 						Thread.sleep(250);
 					} catch (IOException e) {
@@ -85,8 +93,23 @@ public class DrawrServerMap {
 		return false;
 	}
 	
-	public DrawrServerChunk loadChunk(int numx, int numy) throws IOException{
+	public DrawrServerChunk loadChunkForce(int numx, int numy) throws IOException{
 		// this will work differently later
+		if(chunks_loaded > max_chunks) return null;
+		chunks_loaded++;
+		
+		DrawrServerChunk c = loadChunk(numx, numy);
+		if(c == null){
+			synchronized(chunks){
+				chunks.get(numx).put(numy, new DrawrServerChunk(this, numx, numy, null));
+			}
+		}
+		return chunks.get(numx).get(numy);
+	}
+	
+	public DrawrServerChunk loadChunk(int numx, int numy){
+		// only create a chunk if there's a file for it
+		// otherwise, don't create a chunk and return null
 		if(chunks_loaded > max_chunks) return null;
 		chunks_loaded++;
 		
@@ -103,12 +126,10 @@ public class DrawrServerMap {
 			synchronized(chunks){
 				chunks.get(numx).put(numy, new DrawrServerChunk(this, numx, numy, chunk_im));
 			}
+			return chunks.get(numx).get(numy);
 		}catch(Exception ex){
-			synchronized(chunks){
-				chunks.get(numx).put(numy, new DrawrServerChunk(this, numx, numy, null));
-			}
+			return null;
 		}
-		return chunks.get(numx).get(numy);
 	}
 	
 	public void updateChunkCache() throws IOException{
@@ -218,7 +239,7 @@ public class DrawrServerMap {
 				if (!chunks_written.contains(chunk_written_id)){
 					DrawrServerChunk chunk;
 					if (!isChunkLoaded(chunk_numx, chunk_numy)){
-						chunk = loadChunk(chunk_numx, chunk_numy);
+						chunk = loadChunkForce(chunk_numx, chunk_numy);
 					}else{
 						chunk = chunks.get(chunk_numx).get(chunk_numy);
 					}
