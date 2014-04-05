@@ -166,7 +166,17 @@ public class Utils {
 		//http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side
 		
 		try{
-			byte[] msg = message.getBytes("UTF-8");
+			return make_websocket_frame(message.getBytes("UTF-8"));
+		}catch(Exception e){
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public static byte[] make_websocket_frame(byte[] msg){
+		//http://stackoverflow.com/questions/8125507/how-can-i-send-and-receive-websocket-messages-on-the-server-side
+		
+		try{
 			ByteArrayOutputStream frame = new ByteArrayOutputStream();
 			frame.write(129);
 			

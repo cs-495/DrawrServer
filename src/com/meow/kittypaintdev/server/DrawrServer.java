@@ -248,19 +248,37 @@ class DrawrHandler implements DrawrEvent {
 					}
 				}
 			}else{
-				send_frame("UNKNOWN:MESSAGE");
+				send_frame("UNKNOWN:MESSAGE:" + m);
 			}
 		}
 	}
 
 	@Override
+	public void update(int x, int y, byte[] bin_img) throws IOException {
+		// TODO: client keeps track of its viewport with "UPDATESFOR:x1:y1:x2:y2", and only takes updates in that range
+		//send_frame("UPDATE:" + x + ":" + y); // tells client to load chunk via HTTP
+		byte[] msg_start = ("CHUNK:" + x + ":" + y + ":").getBytes("UTF-8");
+		byte[] msg = new byte[msg_start.length + bin_img.length];
+		System.arraycopy(msg_start, 0, msg, 0, msg_start.length);
+		System.arraycopy(bin_img, 0, msg, msg_start.length, bin_img.length);
+		send_frame(msg);
+	}
+	@Override
 	public void update(int x, int y) throws IOException {
 		// TODO: client keeps track of its viewport with "UPDATESFOR:x1:y1:x2:y2", and only takes updates in that range
-		send_frame("UPDATE:" + x + ":" + y);
+		send_frame("UPDATE:" + x + ":" + y); // tells client to load chunk via HTTP
 	}
 	
-	
+
 	public void send_frame(String msg) throws IOException{
+		try{
+			wstream.write(Utils.make_websocket_frame(msg));
+		}catch(IOException e){
+			System.out.println("ERROR: " + msg);
+			throw e;
+		}
+	}
+	public void send_frame(byte[] msg) throws IOException{
 		try{
 			wstream.write(Utils.make_websocket_frame(msg));
 		}catch(IOException e){

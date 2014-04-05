@@ -47,7 +47,7 @@ public class DrawrServerMap {
 				while(true){
 					try {
 						updateChunkCache();
-						Thread.sleep(2000);
+						Thread.sleep(250);
 					} catch (IOException e) {
 						e.printStackTrace();
 					} catch (InterruptedException e) {
@@ -119,8 +119,8 @@ public class DrawrServerMap {
 				for(Map.Entry<Integer, DrawrServerChunk> ch : entry.getValue().entrySet()){
 					int y = ch.getKey();
 					if(ch.getValue().updateCache()){ // if it was updated, update clients
+						//sendUpdateClients(x, y, ch.getValue().getPngImage());//websockets doesn't support binary data yet
 						sendUpdateClients(x, y);
-						System.out.println("update: " +x+","+y);
 					}
 				}
 			}
@@ -129,7 +129,15 @@ public class DrawrServerMap {
 	
 	public void sendUpdateClients(int numx, int numy) throws IOException{
 		for(DrawrEvent client : clients){
+			//client.update(numx, numy, bin_img); //websockets doesn't support binary data yet
 			client.update(numx, numy);
+		}
+	}
+	
+	public void sendUpdateClients(int numx, int numy, byte[] bin_img) throws IOException{
+		for(DrawrEvent client : clients){
+			//client.update(numx, numy, bin_img); //websockets doesn't support binary data yet
+			client.update(numx, numy, bin_img);
 		}
 	}
 	
