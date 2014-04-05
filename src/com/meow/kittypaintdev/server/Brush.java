@@ -2,6 +2,8 @@ package com.meow.kittypaintdev.server;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
@@ -51,7 +53,7 @@ public class Brush {
 		}
 	}
 	
-	public Brush(String path, int size){
+	public Brush(String path, int size, int orig_size){
 		img = null;
 		this.path = path;
 		r = -1; g = -1; b = -1;
@@ -61,6 +63,17 @@ public class Brush {
 			String src = Utils.getPathInAssets(path);
 			File img_file = new File(src);
 			img = ImageIO.read(img_file);
+			
+			//Scale the stamp upward!!
+			if (orig_size < size){
+				double scale = (double)size/(double)orig_size;
+				BufferedImage scaled = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR);
+				AffineTransform at = new AffineTransform();
+				at.scale(scale, scale);
+				AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+				scaled = scaleOp.filter(img, scaled);
+				img = scaled;
+			}
 		}catch(Exception ex){
 			img = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR);
 			Graphics graphics = img.createGraphics();

@@ -1,8 +1,5 @@
 package com.meow.kittypaintdev.server;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,11 +21,11 @@ public class DrawrBrushes {
 		return newbr;
 	}
 	
-	public Brush getStamp(String path, int size){
+	public Brush getStamp(String path, int size, int orig_size){
 		for (Brush br : brush_cache){
 			if(br.matches(path, size)) return br;
 		}
-		Brush newbr = new Brush(path, size);
+		Brush newbr = new Brush(path, size, orig_size);
 		brush_cache.add(newbr);
 		return newbr;
 	}
