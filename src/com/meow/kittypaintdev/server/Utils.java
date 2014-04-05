@@ -66,9 +66,15 @@ public class Utils {
 		return System.currentTimeMillis();
 	}
 	
-	public static String getPathEclipseSucks(String filename) throws IOException{
+	public static String getPathInAssets(String filename) throws IOException{
 		String p = new File( "." ).getCanonicalPath();
 		p += "/assets/" + filename;
+		return p;
+	}
+	
+	public static String getPathInLog(String filename) throws IOException {
+		String p = new File( "." ).getCanonicalPath();
+		p += "/log/" + filename;
 		return p;
 	}
 	

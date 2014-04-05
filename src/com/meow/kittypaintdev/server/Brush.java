@@ -24,7 +24,7 @@ public class Brush {
 		this.r = r; this.g = g; this.b = b;
 			
 		try{
-			Pattern pat = Pattern.compile("^brushes\\/[a-z]+\\/[a-z0-9A-Z]+\\.png$");
+			Pattern pat = Pattern.compile("^brushes\\/[a-z0-9A-Z]+\\/[a-z0-9A-Z]+\\.png$");
 			Matcher m = pat.matcher(path);
 
 			if(!m.matches()){
@@ -32,7 +32,7 @@ public class Brush {
 			}
 			
 			if(r >= 0 && g >= 0 && b >= 0 && r < 256  && g < 256  && b < 256 ){
-				String src = Utils.getPathEclipseSucks(path);
+				String src = Utils.getPathInAssets(path);
 				File img_file = new File(src);
 				img = ImageIO.read(img_file);
 				img = setImageColor(img, size, r, g, b);
@@ -58,7 +58,7 @@ public class Brush {
 		
 		// TODO: SANTIZE THIS GODDAMN PATH FUUUUUUUUCK
 		try{
-			String src = Utils.getPathEclipseSucks(path);
+			String src = Utils.getPathInAssets(path);
 			File img_file = new File(src);
 			img = ImageIO.read(img_file);
 		}catch(Exception ex){

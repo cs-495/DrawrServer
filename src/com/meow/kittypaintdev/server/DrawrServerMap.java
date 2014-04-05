@@ -97,7 +97,7 @@ public class DrawrServerMap {
 		}
 		
 		try{
-			String src = Utils.getPathEclipseSucks("chunks/chunk" + numx + "x" + numy + ".png");
+			String src = Utils.getPathInAssets("chunks/chunk" + numx + "x" + numy + ".png");
 			File img = new File(src);
 			BufferedImage chunk_im = ImageIO.read(img);
 			synchronized(chunks){
