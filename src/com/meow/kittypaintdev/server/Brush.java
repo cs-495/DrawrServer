@@ -30,7 +30,7 @@ public class Brush {
 			Matcher m = pat.matcher(path);
 
 			if(!m.matches()){
-				throw new Exception("invalid path");
+				throw new Exception("unknown brush requested: |" + path + "|");
 			}
 			
 			if(r >= 0 && g >= 0 && b >= 0 && r < 256  && g < 256  && b < 256 ){
@@ -42,7 +42,7 @@ public class Brush {
 				throw new Exception("invalid arguments");
 			}
 		}catch(Exception ex){
-			System.out.println("unknown brush requested: |" + path + "|");
+			System.out.println(ex.toString());
 			img = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR);
 			Graphics graphics = img.createGraphics();
 			graphics.setColor(Color.WHITE);
