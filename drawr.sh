@@ -9,20 +9,22 @@ kill_daemon(){
     if [ -e "$DRAWRPIDFILE" ]
       then
         pid=`cat $DRAWRPIDFILE`
-        if ps -p "$DRAWRPIDFILE" >/dev/null #2>&1
+        if ps -p `cat $DRAWRPIDFILE` -o user,pid,args | grep DrawrServer #| grep java >/dev/null #2>&1
           then
-            # if is running
-            if ps -o user,pid,args | grep DrawrServer | grep java >/dev/null #2>&1
-              then
-                kill `cat $DRAWRPIDFILE`
-            fi
+            kill `cat $DRAWRPIDFILE`
+			rm "$DRAWRPIDFILE"
+			echo "Server was murdered."
+		  else
+		    echo "Server was not running."
         fi
+	  else
+	    echo "PIDFILE not found. Server probably dead."
     fi
 }
 
-kill_daemon_actual(){
-    kill `cat $DRAWRPIDFILE`
-}
+#kill_daemon_actual(){
+#    kill `cat $DRAWRPIDFILE`
+#}
 
 start_daemon(){
     #java -Ddaemon.pidfile=$DRAWRPIDFILE -cp bin com.meow.kittypaintdev.server.DrawrServer <&- 1>/dev/null 2>&1 &
@@ -34,16 +36,17 @@ start_daemon(){
 
 if [ "$1" == "start" ]
   then
+    kill_daemon
     start_daemon
 fi
 
 if [ "$1" == "stop" ]
   then
-    kill_daemon_actual
+    kill_daemon
 fi
 
 if [ "$1" == "restart" ]
   then
-    kill_daemon_actual
+    kill_daemon
     start_daemon
 fi
