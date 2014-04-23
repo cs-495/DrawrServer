@@ -12,6 +12,10 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+class DrawrException extends Exception{
+	
+}
+
 class DrawrHandler implements DrawrEvent {
 	private static int unique_conn_id = 0;
 	public static int socket_timeout = 60000; // 60 seconds i guess
@@ -80,7 +84,7 @@ class DrawrHandler implements DrawrEvent {
 		//depthlog("**CONN>: [" + conn_id + ", " + thisdepth + "] " + client_addr);
 		
 		try{
-			while(!close_connection){
+			while(!close_connection){ // we dont even need this while....
 				handle_one_request();
 			}
 		}catch(SocketException e){
@@ -88,6 +92,8 @@ class DrawrHandler implements DrawrEvent {
 		}catch(IOException e){
 			debug("ioexception - closing");
 			e.printStackTrace();
+		}catch(DrawrException e){
+			//thread end
 		}
 		
 		//depthlog("**xxxx<: [" + conn_id + ", " + thisdepth + "] " + client_addr);
@@ -96,7 +102,7 @@ class DrawrHandler implements DrawrEvent {
 		clientsock.close();
 	}
 	
-	public void handle_one_request() throws IOException{
+	public void handle_one_request() throws IOException, DrawrException{
 		String line = rreader.readLine();
 		if(line == null) return; // END OF STREAM
 		line = line.trim();
@@ -105,7 +111,7 @@ class DrawrHandler implements DrawrEvent {
 		
 		if(words.length != 2 && words.length != 3){
 			send_error(404, "Invalid Request");
-			return;
+			throw new DrawrException();
 		}
 		
 		String command = words[0];
@@ -117,14 +123,18 @@ class DrawrHandler implements DrawrEvent {
 			route();
 		}else{
 			send_error(404, "Invalid Request - only GET supported");
+			throw new DrawrException();
 		}
+		close_connection = true;
 	}
 	
-	public void read_request_handlers() throws IOException{
+	public void read_request_handlers() throws IOException, DrawrException{
 		String headers_str = "";
 		while(true){
 			String line = rreader.readLine();
-			if(line == null) return; // END OF STREAM
+			if(line == null){
+				throw new DrawrException();
+			}
 			if(line.trim().equals("")){
 				break; // blank line, finished reading headers
 			}
@@ -133,14 +143,14 @@ class DrawrHandler implements DrawrEvent {
 		headers = Utils.parse_headers(headers_str);
 	}
 	
-	public void route() throws IOException{
+	public void route() throws IOException, DrawrException{
 		String just_path = Utils.parse_path(path);
 
 		Pattern pat = Pattern.compile("(?<path>[a-z]*)\\??(?<query>.*)$");
 		Matcher m = pat.matcher(just_path);
 		if(!m.matches()){
 			send_error(404, "Not Found");
-			return;
+			throw new DrawrException();
 		}
 		String mpath = m.group("path");
 		String mquery = m.group("query");
@@ -151,16 +161,17 @@ class DrawrHandler implements DrawrEvent {
 			request_chunk(mquery);
 		}else{
 			send_error(404, "Not Found (route)");
+			throw new DrawrException();
 		}
 	}
 	
-	public void request_chunk(String query) throws IOException{
+	public void request_chunk(String query) throws IOException, DrawrException{
 		Pattern pat = Pattern.compile("^(?<x>[\\-0-9]+)&(?<y>[\\-0-9]+).*");
 		Matcher m = pat.matcher(query);
 
 		if(!m.matches()){
 			send_error(404, "Not Found (request_chunk)");
-			return;
+			throw new DrawrException();
 		}
 
 		int numx = Integer.parseInt(m.group("x"));
