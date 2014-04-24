@@ -68,10 +68,9 @@ public class Brush {
 			if (orig_size < size){
 				double scale = (double)size/(double)orig_size;
 				BufferedImage scaled = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR);
-				AffineTransform at = new AffineTransform();
-				at.scale(scale, scale);
-				AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-				scaled = scaleOp.filter(img, scaled);
+				Graphics g = scaled.createGraphics();
+				g.drawImage(img, 0, 0, size, size, null);
+				g.dispose();
 				img = scaled;
 			}
 		}catch(Exception ex){

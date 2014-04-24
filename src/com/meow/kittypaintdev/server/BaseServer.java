@@ -21,7 +21,7 @@ public abstract class BaseServer {
 		public void run() {
 			try {
 				handle(clientsock);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}

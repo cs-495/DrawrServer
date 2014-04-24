@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.Semaphore;
 
 import javax.imageio.ImageIO;
 
@@ -15,6 +16,10 @@ public class DrawrServerChunk {
 	Graphics g;
 	byte[] chunkPngCache;
 	boolean changedSinceLastCache;
+	
+	private static Semaphore no_waiting = new Semaphore(1), no_accessing = new Semaphore(1), counter_mutex = new Semaphore(1);
+	private static int nreaders = 0;
+	private int prev, current; 
 	
 	public DrawrServerChunk(DrawrServerMap drawr_map, int numx, int numy, BufferedImage chunk_im) throws IOException{
 		
@@ -47,15 +52,39 @@ public class DrawrServerChunk {
 		
 		int s = (int)Math.floor(size/2.0);
 		
-		//http://examples.javacodegeeks.com/desktop-java/awt/image/drawing-on-a-buffered-image/
-		g.drawImage(brush_img, local_x-s, local_y-s, null);
+		try{
+			//en.wikipedia.org/wiki/Readers-writers_problem
+			no_waiting.acquire();;
+			no_accessing.acquire();
+			no_waiting.release();
+			//http://examples.javacodegeeks.com/desktop-java/awt/image/drawing-on-a-buffered-image/
+			g.drawImage(brush_img, local_x-s, local_y-s, null);
+			no_accessing.release();
+		}catch(Exception ex){}
+
 		changedSinceLastCache = true;
 	}
 	
 	public boolean updatePngCache() throws IOException{
 		if(changedSinceLastCache){
 			ByteArrayOutputStream bstream = new ByteArrayOutputStream();
-			ImageIO.write(chunk_im, "png", bstream);
+			try{
+				//http://en.wikipedia.org/wiki/Readers%E2%80%93writers_problem
+				no_waiting.acquire();
+				counter_mutex.acquire();
+				prev = nreaders;
+				nreaders += 1;
+				counter_mutex.release();
+				if (prev == 0) no_accessing.acquire();
+				no_waiting.release();
+				ImageIO.write(chunk_im, "png", bstream);
+				counter_mutex.acquire();
+				nreaders -= 1;
+				current = nreaders;
+				counter_mutex.release();
+				if (current == 0) no_accessing.release();
+			}catch(Exception ex){}
+			
 			chunkPngCache = bstream.toByteArray();
 			changedSinceLastCache = false;
 			return true;

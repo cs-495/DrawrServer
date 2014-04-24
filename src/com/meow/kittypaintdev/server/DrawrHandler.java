@@ -84,9 +84,9 @@ class DrawrHandler implements DrawrEvent {
 		//depthlog("**CONN>: [" + conn_id + ", " + thisdepth + "] " + client_addr);
 		
 		try{
-			while(!close_connection){ // we dont even need this while....
+			//while(!close_connection){ // we dont even need this while....
 				handle_one_request();
-			}
+			//}
 		}catch(SocketException e){
 			debug("timeout");
 		}catch(IOException e){
@@ -99,6 +99,9 @@ class DrawrHandler implements DrawrEvent {
 		//depthlog("**xxxx<: [" + conn_id + ", " + thisdepth + "] " + client_addr);
 		depth--;
 		drawr_map.removeClient(conn_id);
+		rreader.close();
+		wwriter.flush();
+		wwriter.close();
 		clientsock.close();
 	}
 	

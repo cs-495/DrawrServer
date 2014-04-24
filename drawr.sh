@@ -3,6 +3,7 @@
 # benji@benji-PC /cygdrive/c/home/prog/workspace/DrawrServer
 # $ java -cp bin com.meow.kittypaintdev.server.DrawrServer
 
+cd /home/kat/DrawrServer
 DRAWRPIDFILE=/var/run/drawrserver.pid
 
 kill_daemon(){
