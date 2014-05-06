@@ -103,12 +103,11 @@ public class DrawrServerMap {
 	public DrawrServerChunk loadChunkForce(int numx, int numy) throws IOException{
 		// this will work differently later
 		if(chunks_loaded > max_chunks){
-			System.out.println("NULL FORCE 1: " + chunks_loaded + " MAX: " + max_chunks);
+			//System.out.println("NULL FORCE 1: " + chunks_loaded + " MAX: " + max_chunks);
 			return null;
 		}
 		
 		
-		System.out.println("TRY FORCE to loadChunk...");
 		DrawrServerChunk c = loadChunk(numx, numy);
 		if(c == null){
 			DrawrServerChunk new_chunk = new DrawrServerChunk(this, numx, numy, null);
@@ -116,7 +115,7 @@ public class DrawrServerMap {
 				chunks.get(numx).put(numy, new_chunk);
 			}
 			chunks_loaded++;
-			System.out.println("FORCE CHUNKS LOADED: " + chunks_loaded + " MAX: " + max_chunks);
+			//System.out.println("FORCE CHUNKS LOADED: " + chunks_loaded + " MAX: " + max_chunks);
 		}
 		return chunks.get(numx).get(numy);
 	}
@@ -125,7 +124,7 @@ public class DrawrServerMap {
 		// only create a chunk if there's a file for it
 		// otherwise, don't create a chunk and return null
 		if(chunks_loaded > max_chunks){
-			System.out.println("NULL: " + chunks_loaded + " MAX: " + max_chunks);
+			//System.out.println("NULL: " + chunks_loaded + " MAX: " + max_chunks);
 			return null;
 		}
 		
@@ -146,7 +145,7 @@ public class DrawrServerMap {
 				}
 			}
 			chunks_loaded++;
-			System.out.println("CHUNKS LOADED: " + chunks_loaded + " MAX: " + max_chunks);
+			//System.out.println("CHUNKS LOADED: " + chunks_loaded + " MAX: " + max_chunks);
 			return chunks.get(numx).get(numy);
 		}catch(Exception ex){
 			return null;
