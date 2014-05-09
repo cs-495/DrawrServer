@@ -6,7 +6,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,11 +18,15 @@ import javax.imageio.ImageIO;
 public class Brush {
 	BufferedImage img;
 	String path;
+	int type;
+	public static int BRUSH = 0;
+	public static int STAMP = 1;
 	int r;
 	int g;
 	int b;
 	
 	public Brush(String path, int size, int r, int g, int b){
+		type = Brush.BRUSH;
 		img = null;
 		this.path = path;
 		this.r = r; this.g = g; this.b = b;
@@ -54,6 +60,7 @@ public class Brush {
 	}
 	
 	public Brush(String path, int size){
+		type = Brush.STAMP;
 		img = null;
 		this.path = path;
 		r = -1; g = -1; b = -1;
@@ -81,6 +88,45 @@ public class Brush {
 			graphics.drawString("?", 5, 5);
 			graphics.dispose();
 		}
+	}
+	
+	public Brush(String dataUrl, byte[] data, int size){
+		type = Brush.STAMP;
+		img = null;
+		this.path = dataUrl;
+		r = -1; g = -1; b = -1;
+		
+		try{
+			img = createImageFromBytes(data);
+			
+			//Scale the stamp upward!!
+			int orig_size = img.getWidth();
+			if (orig_size < size){
+				double scale = (double)size/(double)orig_size;
+				BufferedImage scaled = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR);
+				Graphics g = scaled.createGraphics();
+				g.drawImage(img, 0, 0, size, size, null);
+				g.dispose();
+				img = scaled;
+			}
+		}catch(Exception ex){
+			img = new BufferedImage(size, size, BufferedImage.TYPE_4BYTE_ABGR);
+			Graphics graphics = img.createGraphics();
+			graphics.setColor(Color.CYAN);
+			graphics.fillRect(0, 0, img.getWidth(), img.getHeight());
+			graphics.drawString("?", 5, 5);
+			graphics.dispose();
+		}
+	}
+	
+	//http://stackoverflow.com/questions/12705385/how-to-convert-a-byte-to-a-bufferedimage-in-java
+	private BufferedImage createImageFromBytes(byte[] imageData) {
+	    ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
+	    try {
+	        return ImageIO.read(bais);
+	    } catch (IOException e) {
+	        throw new RuntimeException(e);
+	    }
 	}
 	
 	public BufferedImage getImage(){

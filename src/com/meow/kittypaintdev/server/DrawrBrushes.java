@@ -30,6 +30,15 @@ public class DrawrBrushes {
 		return newbr;
 	}
 	
+	public Brush makeStamp(String dataUrl, byte[] data, int size){
+		for (Brush br : brush_cache){
+			if(br.matches(dataUrl, size)) return br;
+		}
+		Brush newbr = new Brush(dataUrl, data, size);
+		brush_cache.add(newbr);
+		return newbr;
+	}
+	
 	////////////////////////////////////////////////////// here be dragons
 	
 	/*public static void setBrushColor(Brush brush, int r, int g, int b){

@@ -244,7 +244,7 @@ public class DrawrServerMap {
 		return chunk_local_coords;
 	}
 	
-	public void addPoint(int gamex, int gamey, Brush brush, int size) throws IOException{
+	public void addPoint(int gamex, int gamey, Brush brush, int size, boolean pattern, boolean blend) throws IOException{		
 		int[][] chunks_affected = getChunksAffected(gamex, gamey, brush, size);
 		int[][] chunks_local_coords = getChunkLocalCoordinates(gamex, gamey, chunks_affected, brush);
 		
@@ -265,7 +265,7 @@ public class DrawrServerMap {
 					}
 					
 					if(chunk != null){
-						chunk.addPoint(chunks_local_coords[i][0], chunks_local_coords[i][1], brush, size);
+						chunk.addPoint(chunks_local_coords[i][0], chunks_local_coords[i][1], brush, size, pattern, blend);
 					}
 					
 					chunks_written.add(chunk_written_id);

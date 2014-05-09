@@ -11,6 +11,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.xml.bind.DatatypeConverter;
 
 class DrawrException extends Exception{
 	
@@ -239,7 +240,7 @@ class DrawrHandler implements DrawrEvent {
 				send_frame(o + "</i></b>");
 			}else if(m.startsWith("ADDPOINTBR")){
 				String[] parts = m.split("\\:");
-				if(parts.length == 8){
+				if(parts.length == 10){
 					try{
 						int x = Integer.parseInt(parts[1]);
 						int y = Integer.parseInt(parts[2]);
@@ -248,10 +249,13 @@ class DrawrHandler implements DrawrEvent {
 						int r = Integer.parseInt(parts[5]);
 						int g = Integer.parseInt(parts[6]);
 						int b = Integer.parseInt(parts[7]);
+			
+						boolean pattern_mode = Boolean.parseBoolean(parts[8]);
+						boolean blend_mode = Boolean.parseBoolean(parts[9]);
 						
 						Brush br = drawr_brushes.getBrush(path, size, r, g, b);
 						if(br != null){
-							drawr_map.addPoint(x, y, br, size);
+							drawr_map.addPoint(x, y, br, size, pattern_mode, blend_mode);
 						}
 						
 					}catch(Exception e){
@@ -260,16 +264,43 @@ class DrawrHandler implements DrawrEvent {
 				}
 			}else if(m.startsWith("ADDSTAMPBR")){
 				String[] parts = m.split("\\:");
-				if(parts.length == 5){
+				if(parts.length == 7){
 					try{
 						int x = Integer.parseInt(parts[1]);
 						int y = Integer.parseInt(parts[2]);
 						String path = parts[3];
 						int size = Integer.parseInt(parts[4]);
 						
+						boolean pattern_mode = Boolean.parseBoolean(parts[5]);
+						boolean blend_mode = Boolean.parseBoolean(parts[6]);
+						
 						Brush br = drawr_brushes.getStamp(path, size);
 						if(br != null){
-							drawr_map.addPoint(x, y, br, size);
+							drawr_map.addPoint(x, y, br, size, pattern_mode, blend_mode);
+						}
+						
+					}catch(Exception e){
+						debug("ERROR: parsing frame <" + m + ">");
+					}
+				}
+			}else if(m.startsWith("ADDCUSTOMBR")){
+				String[] parts = m.split("\\:");
+				if(parts.length == 8){
+					try{
+						int x = Integer.parseInt(parts[1]);
+						int y = Integer.parseInt(parts[2]);
+						String dataUrl = parts[4];
+						String encodingPrefix = "base64,";
+						int contentStartIndex = dataUrl.indexOf(encodingPrefix) + encodingPrefix.length();
+						byte[] imageData = DatatypeConverter.parseBase64Binary(dataUrl.substring(contentStartIndex));
+						int size = Integer.parseInt(parts[5]);
+						
+						boolean pattern_mode = Boolean.parseBoolean(parts[6]);
+						boolean blend_mode = Boolean.parseBoolean(parts[7]);
+						
+						Brush br = drawr_brushes.makeStamp(dataUrl, imageData, size);
+						if(br != null){
+							drawr_map.addPoint(x, y, br, size, pattern_mode, blend_mode);
 						}
 						
 					}catch(Exception e){

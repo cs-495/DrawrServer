@@ -1,7 +1,9 @@
 package com.meow.kittypaintdev.server;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,7 +49,7 @@ public class DrawrServerChunk {
 		// etc
 	}
 	
-	public void addPoint(int local_x, int local_y, Brush brush, int size){
+	public void addPoint(int local_x, int local_y, Brush brush, int size, boolean pattern, boolean blend){
 		BufferedImage brush_img = brush.getImage();
 		
 		int s = (int)Math.floor(size/2.0);
@@ -58,7 +60,14 @@ public class DrawrServerChunk {
 			no_accessing.acquire();
 			no_waiting.release();
 			//http://examples.javacodegeeks.com/desktop-java/awt/image/drawing-on-a-buffered-image/
-			g.drawImage(brush_img, local_x-s, local_y-s, null);
+			//P.S. I don't know how to blend using this graphics object :/
+			if (pattern && brush.type == Brush.BRUSH){
+				g.setColor(new Color(brush.r, brush.g, brush.b));
+				g.fillRect(local_x-s, local_y-s, size, size);
+			}else{
+				g.drawImage(brush_img, local_x-s, local_y-s, null);
+			}
+			
 			no_accessing.release();
 		}catch(Exception ex){}
 
